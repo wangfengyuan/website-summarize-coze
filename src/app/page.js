@@ -5,7 +5,7 @@ import { Spotlight } from "@/app/components/Spotlight";
 import { LineMdGithubLoop } from "@/app/components/github-icon";
 
 export default function Home() {
-  const [imgUrl, setImgUrl] = useState("");
+  const [websiteInfo, setWebsiteInfo] = useState({});
   const [loading, setLoading] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -25,11 +25,9 @@ export default function Home() {
     const intervalTimer = startDuration();
     try {
       setLoading(true);
-      const res = await fetch(`/try?url=${url}`, {
-        next: { revalidate: 10 },
-      });
-      const data = await res.blob();
-      setImgUrl(URL.createObjectURL(data));
+      const response = await fetch(`/summarize?url=${url}`);
+      const res = await response.json();
+      setWebsiteInfo(res)
     } catch (error) {
       console.error(error);
       alert("Something went wrong");
@@ -48,26 +46,16 @@ export default function Home() {
   }
 
   return (
-    <div className="relative w-screen h-screen bg-grid-white/[0.2] bg-black">
+    <div className="relative w-screen bg-grid-white/[0.2] bg-black">
       <Spotlight
         className="-top-40 left-0 md:left-60 md:-top-20"
         fill="white"
       />
-      <div className="w-full h-full relative z-20 flex flex-col items-center justify-center text-white">
-        <div className="mb-16 max-w-lg text-center">
+      <div className="w-full h-full relative min-h-screen z-20 flex flex-col items-center text-white pb-12 pt-20">
+        <div className="mb-16 text-center">
           <h3 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
-            Try screenshot
+            Try url summarize
           </h3>
-          <p className="text-md mt-3">
-            Thursday, May 9th 2024 Vercel Functions for Hobby can now run up to
-            60 seconds{" "}
-            <a
-              href="https://vercel.com/changelog/vercel-functions-for-hobby-can-now-run-up-to-60-seconds"
-              className="text-blue-500 underline"
-            >
-              detail
-            </a>
-          </p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col space-y-3">
@@ -105,15 +93,24 @@ export default function Home() {
                       <path d="M232,128a104,104,0,0,1-208,0c0-41,23.81-78.36,60.66-95.27a8,8,0,0,1,6.68,14.54C60.15,61.59,40,93.27,40,128a88,88,0,0,0,176,0c0-34.73-20.15-66.41-51.34-80.73a8,8,0,0,1,6.68-14.54C208.19,49.64,232,87,232,128Z"></path>
                     </svg>
                   )}
-                  {loading ? "Loading..." : "Screenshot"}
+                  {loading ? "Loading..." : "Summarize"}
                 </span>
               </button>
             </div>
           </div>
         </form>
-        {imgUrl && (
-          <div className="border border-gray-100/10 mt-4 max-w-4xl">
-            <img src={imgUrl} alt="screenshot" />
+        {websiteInfo.screenshot_url && (
+          <div class="relative shadow-[0_8px_12px_-6px_rgba(0,0,0,0.2)] border w-full max-w-[360px] rounded-lg font-[sans-serif] overflow-hidden mx-auto mt-4">
+            <div className="flex flex-col px-8 py-8">
+              <div className="text-center">
+                <h1 className="text-3xl font-semibold text-blue-600">{websiteInfo.title}</h1>
+                <p className="text-lg text-gray-500 text-ellipsis overflow-hidden line-clamp-5 my-4">{websiteInfo.description}</p>
+              </div>
+              <div className="w-full">
+                <img src={websiteInfo.screenshot_url} className="w-full rounded-lg block flex-1 bg-cover min-h-[294px] min-w-[294px]" />
+              </div>
+            </div>
+            <img className="absolute inset-0 w-full h-full -z-10" src="https://images.unsplash.com/photo-1563291074-2bf8677ac0e5?q=80&w=2650&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" />
           </div>
         )}
       </div>
